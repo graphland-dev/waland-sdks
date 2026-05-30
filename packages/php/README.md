@@ -110,7 +110,19 @@ $alerts = new WalandClient($apiKey, $alertsSessionId);
 
 ## Development
 
+**Packagist** uses the repository root [`composer.json`](../../composer.json). A copy for this folder lives at [`composer.json`](./composer.json) (paths relative to `packages/php/`).
+
+From the **repo root** (recommended):
+
 ```bash
+composer install
+composer test
+```
+
+Or only this package directory:
+
+```bash
+cd packages/php
 composer install
 composer test
 ```

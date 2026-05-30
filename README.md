@@ -57,3 +57,12 @@ $client->sendMessage([
 ```
 
 See [`packages/node/README.md`](./packages/node/README.md) and [`packages/php/README.md`](./packages/php/README.md) for full API docs.
+
+### PHP development (monorepo)
+
+Root [`composer.json`](./composer.json) is what Packagist indexes. [`packages/php/composer.json`](./packages/php/composer.json) is a copy for working in that directory only.
+
+```bash
+composer install   # repo root
+composer test
+```

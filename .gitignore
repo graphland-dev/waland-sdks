@@ -1,7 +1,9 @@
 node_modules/
 vendor/
+packages/php/vendor/
 dist/
 .phpunit.cache/
+packages/php/.phpunit.cache/
 *.tsbuildinfo
 .DS_Store
 .env

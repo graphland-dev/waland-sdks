@@ -16,12 +16,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Waland\\": "src/"
+      "Waland\\": "packages/php/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Waland\\Tests\\": "tests/"
+      "Waland\\Tests\\": "packages/php/tests/"
     }
   },
   "require-dev": {
@@ -34,7 +34,6 @@
   "prefer-stable": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/graphland-dev/waland-sdks.git",
-    "directory": "packages/php"
+    "url": "https://github.com/graphland-dev/waland-sdks.git"
   }
 }
