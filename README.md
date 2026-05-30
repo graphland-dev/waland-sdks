@@ -7,8 +7,7 @@ Official client libraries for the [Waland WhatsApp API](https://api.waland.dev).
 | Language | Package | Path |
 |----------|---------|------|
 | Node.js | `waland` | [`packages/node`](./packages/node) |
-
-PHP and other languages will be added under `packages/`.
+| PHP | `waland/waland` | [`packages/php`](./packages/php) |
 
 ## Credentials
 
@@ -37,4 +36,24 @@ await client.sendMessage({
 });
 ```
 
-See [`packages/node/README.md`](./packages/node/README.md) for full API docs.
+## PHP
+
+```bash
+composer require waland/waland
+```
+
+```php
+use Waland\WalandClient;
+
+$client = new WalandClient(
+    getenv('WALAND_API_KEY'),
+    getenv('WALAND_SESSION_ID'),
+);
+
+$client->sendMessage([
+    'chatId' => '8801712345678@s.whatsapp.net',
+    'text' => 'Hello from Waland',
+]);
+```
+
+See [`packages/node/README.md`](./packages/node/README.md) and [`packages/php/README.md`](./packages/php/README.md) for full API docs.

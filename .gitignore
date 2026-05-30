@@ -1,5 +1,7 @@
 node_modules/
+vendor/
 dist/
+.phpunit.cache/
 *.tsbuildinfo
 .DS_Store
 .env
