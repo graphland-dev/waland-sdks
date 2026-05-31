@@ -8,6 +8,7 @@ Official client libraries for the [Waland WhatsApp API](https://api.waland.dev).
 |----------|---------|------|
 | Node.js | `waland` | [`packages/node`](./packages/node) |
 | PHP | `waland/waland` | [`packages/php`](./packages/php) |
+| Go | `github.com/graphland-dev/waland-sdks/packages/go` | [`packages/go`](./packages/go) |
 
 ## Credentials
 
@@ -56,7 +57,26 @@ $client->sendMessage([
 ]);
 ```
 
-See [`packages/node/README.md`](./packages/node/README.md) and [`packages/php/README.md`](./packages/php/README.md) for full API docs.
+## Go
+
+```bash
+go get github.com/graphland-dev/waland-sdks/packages/go
+```
+
+```go
+client, _ := waland.NewClient(
+    os.Getenv("WALAND_API_KEY"),
+    os.Getenv("WALAND_SESSION_ID"),
+    nil,
+)
+
+client.SendMessage(context.Background(), waland.SendMessageParams{
+    ChatID: "8801712345678@s.whatsapp.net",
+    Text:   "Hello from Waland",
+})
+```
+
+See [`packages/node/README.md`](./packages/node/README.md), [`packages/php/README.md`](./packages/php/README.md), and [`packages/go/README.md`](./packages/go/README.md) for full API docs.
 
 ### PHP development (monorepo)
 
