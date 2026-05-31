@@ -63,6 +63,7 @@ WalandClient::new(api_key, session_id, options)
 | `session_id` | Session ID from **WhatsApp accounts** in the [merchant console](https://console.waland.dev/merchant) (after connecting via QR code) |
 | `options.base_url` | API base URL (default: `https://api.waland.dev`) |
 | `options.timeout` | Request timeout (default: `30s`) |
+| `options.http_client` | Custom `reqwest::Client` instance |
 
 ## `send_message(params)`
 
