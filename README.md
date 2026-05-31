@@ -9,6 +9,7 @@ Official client libraries for the [Waland WhatsApp API](https://api.waland.dev).
 | Node.js | `waland` | [`packages/node`](./packages/node) |
 | PHP | `waland/waland` | [`packages/php`](./packages/php) |
 | Go | `github.com/graphland-dev/waland-sdks/packages/go` | [`packages/go`](./packages/go) |
+| Rust | `waland` | [`packages/rust`](./packages/rust) |
 
 ## Credentials
 
@@ -76,7 +77,33 @@ client.SendMessage(context.Background(), waland.SendMessageParams{
 })
 ```
 
-See [`packages/node/README.md`](./packages/node/README.md), [`packages/php/README.md`](./packages/php/README.md), and [`packages/go/README.md`](./packages/go/README.md) for full API docs.
+## Rust
+
+```bash
+cargo add waland
+```
+
+```rust
+use waland::{SendMessageParams, WalandClient};
+
+#[tokio::main]
+async fn main() {
+    let client = WalandClient::new(
+        std::env::var("WALAND_API_KEY").unwrap(),
+        std::env::var("WALAND_SESSION_ID").unwrap(),
+        None,
+    ).unwrap();
+
+    let _ = client.send_message(SendMessageParams {
+        chat_id: "8801712345678@s.whatsapp.net".to_string(),
+        text: Some("Hello from Waland".to_string()),
+        media_url: None,
+        media_filename: None,
+    }).await;
+}
+```
+
+See [`packages/node/README.md`](./packages/node/README.md), [`packages/php/README.md`](./packages/php/README.md), [`packages/go/README.md`](./packages/go/README.md), and [`packages/rust/README.md`](./packages/rust/README.md) for full API docs.
 
 ### PHP development (monorepo)
 
