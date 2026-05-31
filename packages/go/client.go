@@ -39,7 +39,7 @@ func NewClient(apiKey, sessionID string, options *ClientOptions) (*Client, error
 
 	baseURL := DefaultBaseURL
 	timeout := 30 * time.Second
-	var httpClient HTTPDoer = &http.Client{Timeout: timeout}
+	var httpClient HTTPDoer
 
 	if options != nil {
 		if strings.TrimSpace(options.BaseURL) != "" {
@@ -53,7 +53,7 @@ func NewClient(apiKey, sessionID string, options *ClientOptions) (*Client, error
 		}
 	}
 
-	if options == nil || options.HTTPClient == nil {
+	if httpClient == nil {
 		httpClient = &http.Client{Timeout: timeout}
 	}
 
