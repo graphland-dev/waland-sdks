@@ -18,10 +18,6 @@ export function validateSendMessageParams(params: SendMessageParams): void {
     );
   }
 
-  export function validateCheckNumberParams(params: CheckNumberParams): void {
-    assertNonEmpty(params.number, "number");
-  }
-
   const text = params.text?.trim();
   const mediaUrl = params.mediaUrl?.trim();
 
@@ -46,4 +42,8 @@ export function validateSendMessageParams(params: SendMessageParams): void {
   if (params.mediaFilename !== undefined && !params.mediaFilename.trim()) {
     throw new WalandValidationError("mediaFilename cannot be empty");
   }
+}
+
+export function validateCheckNumberParams(params: CheckNumberParams): void {
+  assertNonEmpty(params.number, "number");
 }
