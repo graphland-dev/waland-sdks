@@ -85,6 +85,19 @@ await client.sendMessage({
 });
 ```
 
+## `checkNumber(params)`
+
+Checks whether a phone number is available on WhatsApp for the current session.
+
+| Field    | Required | Description                                  |
+| -------- | -------- | -------------------------------------------- |
+| `number` | Yes      | Phone number in international format (digits) |
+
+```ts
+const result = await client.checkNumber({ number: "8801712345678" });
+console.log(result.exists ?? result.isWhatsApp ?? result.onWhatsApp);
+```
+
 ## Errors
 
 - `WalandValidationError` — invalid arguments before the request is sent
@@ -110,6 +123,5 @@ Use one client per session (same API key is fine):
 const support = new WalandClient(apiKey, supportSessionId);
 const alerts = new WalandClient(apiKey, alertsSessionId);
 ```
-
 
 

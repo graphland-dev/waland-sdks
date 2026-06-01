@@ -37,3 +37,16 @@ type SendMessageResult struct {
 	Error          *string      `json:"error"`
 	CreatedAt      string       `json:"createdAt"`
 }
+
+type CheckNumberParams struct {
+	Number string
+}
+
+type CheckNumberResult struct {
+	Number     *string `json:"number"`
+	ChatID     *string `json:"chatId"`
+	JID        *string `json:"jid"`
+	Exists     *bool   `json:"exists"`
+	IsWhatsApp *bool   `json:"isWhatsApp"`
+	OnWhatsApp *bool   `json:"onWhatsApp"`
+}

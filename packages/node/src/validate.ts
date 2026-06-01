@@ -1,5 +1,5 @@
 import { WalandValidationError } from "./errors.js";
-import type { SendMessageParams } from "./types.js";
+import type { CheckNumberParams, SendMessageParams } from "./types.js";
 
 const CHAT_ID_PATTERN = /^[^@\s]+@(s\.whatsapp\.net|g\.us)$/;
 
@@ -42,4 +42,8 @@ export function validateSendMessageParams(params: SendMessageParams): void {
   if (params.mediaFilename !== undefined && !params.mediaFilename.trim()) {
     throw new WalandValidationError("mediaFilename cannot be empty");
   }
+}
+
+export function validateCheckNumberParams(params: CheckNumberParams): void {
+  assertNonEmpty(params.number, "number");
 }

@@ -76,6 +76,27 @@ WalandClient::new(api_key, session_id, options)
 
 \* At least one of `text` or `media_url` must be provided.
 
+## `check_number(params)`
+
+Checks whether a phone number is available on WhatsApp for the current session.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `number` | Yes | Phone number in international format (digits) |
+
+```rust
+let result = client
+    .check_number(waland::CheckNumberParams {
+        number: "8801712345678".to_string(),
+    })
+    .await?;
+
+println!(
+    "{:?} {:?} {:?}",
+    result.exists, result.is_whats_app, result.on_whats_app
+);
+```
+
 ## Errors
 
 - `WalandValidationError` — invalid arguments before the request is sent

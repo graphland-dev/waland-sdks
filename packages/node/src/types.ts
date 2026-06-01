@@ -33,6 +33,21 @@ export interface SendMessageResult {
   createdAt: string;
 }
 
+export interface CheckNumberParams {
+  /** Phone number in international format, e.g. `8801712345678`. */
+  number: string;
+}
+
+export interface CheckNumberResult {
+  number?: string;
+  chatId?: string;
+  jid?: string;
+  exists?: boolean;
+  isWhatsApp?: boolean;
+  onWhatsApp?: boolean;
+  [key: string]: unknown;
+}
+
 export interface WalandApiErrorBody {
   statusCode: number;
   message: string | string[];

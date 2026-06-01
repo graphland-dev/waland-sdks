@@ -56,6 +56,18 @@ final class MessageValidator
                     'mediaUrl must include a protocol (http or https)',
                 );
             }
+
+            /**
+             * @param array{number: string} $params
+             */
+            public static function validateCheckNumber(array $params): void
+            {
+                if (!isset($params['number'])) {
+                    throw new WalandValidationException('number is required');
+                }
+
+                self::assertNonEmpty((string) $params['number'], 'number');
+            }
         }
 
         if (array_key_exists('mediaFilename', $params) && trim((string) $params['mediaFilename']) === '') {

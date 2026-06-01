@@ -86,6 +86,24 @@ waland.NewClient(apiKey, sessionID, options)
 
 \* At least one of `Text` or `MediaURL` must be provided.
 
+## `CheckNumber(ctx, params)`
+
+Checks whether a phone number is available on WhatsApp for the current session.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `Number` | Yes | Phone number in international format (digits) |
+
+```go
+result, err := client.CheckNumber(context.Background(), waland.CheckNumberParams{
+    Number: "8801712345678",
+})
+if err != nil {
+    log.Fatal(err)
+}
+fmt.Println(result.Exists, result.IsWhatsApp, result.OnWhatsApp)
+```
+
 ## Errors
 
 - `*waland.ValidationError` — invalid arguments before the request is sent

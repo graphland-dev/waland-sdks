@@ -83,6 +83,19 @@ $client->sendMessage([
 ]);
 ```
 
+## `checkNumber($params)`
+
+Checks whether a phone number is available on WhatsApp for the current session.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `number` | Yes | Phone number in international format (digits) |
+
+```php
+$result = $client->checkNumber(['number' => '8801712345678']);
+var_dump($result['exists'] ?? $result['isWhatsApp'] ?? $result['onWhatsApp'] ?? null);
+```
+
 ## Errors
 
 - `Waland\WalandValidationException` — invalid arguments before the request is sent

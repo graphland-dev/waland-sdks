@@ -18,6 +18,13 @@ const successBody = {
   createdAt: "2026-05-24T10:00:00.000Z",
 };
 
+const checkNumberBody = {
+  number: "8801712345678",
+  chatId: "8801712345678@s.whatsapp.net",
+  jid: "8801712345678@s.whatsapp.net",
+  exists: true,
+};
+
 describe("WalandClient", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -131,5 +138,34 @@ describe("WalandClient", () => {
       statusCode: 401,
       message: "Invalid or missing org API key",
     } satisfies Partial<WalandError>);
+  });
+
+  it("checks a number", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(checkNumberBody), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const client = new WalandClient(API_KEY, SESSION_ID);
+    const result = await client.checkNumber({ number: "8801712345678" });
+
+    expect(result).toEqual(checkNumberBody);
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.waland.dev/v1/sessions/session-abc123/check-number",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ number: "8801712345678" }),
+      }),
+    );
+  });
+
+  it("rejects empty number for checkNumber", async () => {
+    const client = new WalandClient(API_KEY, SESSION_ID);
+
+    await expect(client.checkNumber({ number: "  " })).rejects.toThrow(
+      WalandValidationError,
+    );
   });
 });

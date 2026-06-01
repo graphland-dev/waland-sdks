@@ -147,6 +147,77 @@ func (c *Client) SendMessage(ctx context.Context, params SendMessageParams) (Sen
 	return result, nil
 }
 
+func (c *Client) CheckNumber(ctx context.Context, params CheckNumberParams) (CheckNumberResult, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	if err := validateCheckNumberParams(params); err != nil {
+		return CheckNumberResult{}, err
+	}
+
+	payload := map[string]string{
+		"number": strings.TrimSpace(params.Number),
+	}
+
+	bodyBytes, err := json.Marshal(payload)
+	if err != nil {
+		return CheckNumberResult{}, err
+	}
+
+	requestURL := fmt.Sprintf("%s/v1/sessions/%s/check-number", c.baseURL, url.PathEscape(c.sessionID))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return CheckNumberResult{}, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	response, err := c.http.Do(req)
+	if err != nil {
+		if isTimeoutError(err) {
+			return CheckNumberResult{}, &APIError{
+				StatusCode: http.StatusRequestTimeout,
+				Message:    fmt.Sprintf("Request timed out after %dms", c.timeout.Milliseconds()),
+				ErrorType:  "Request Timeout",
+				Body: APIErrorBody{
+					StatusCode: http.StatusRequestTimeout,
+					Message:    fmt.Sprintf("Request timed out after %dms", c.timeout.Milliseconds()),
+					Error:      "Request Timeout",
+				},
+			}
+		}
+		return CheckNumberResult{}, err
+	}
+	defer response.Body.Close()
+
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return CheckNumberResult{}, err
+	}
+
+	parsedBody := parseJSONBody(responseBody, response.StatusCode)
+
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		normalized := normalizeErrorBody(response.StatusCode, parsedBody)
+		return CheckNumberResult{}, &APIError{
+			StatusCode: normalized.StatusCode,
+			Message:    formatAPIMessage(normalized.Message, statusMessage(response.StatusCode)),
+			ErrorType:  normalized.Error,
+			Body:       normalized,
+		}
+	}
+
+	var result CheckNumberResult
+	if err := json.Unmarshal(responseBody, &result); err != nil {
+		return CheckNumberResult{}, err
+	}
+
+	return result, nil
+}
+
 func validateSendMessageParams(params SendMessageParams) error {
 	if strings.TrimSpace(params.ChatID) == "" {
 		return &ValidationError{Message: "chatId is required"}
@@ -174,6 +245,14 @@ func validateSendMessageParams(params SendMessageParams) error {
 
 	if params.MediaFilename != "" && strings.TrimSpace(params.MediaFilename) == "" {
 		return &ValidationError{Message: "mediaFilename cannot be empty"}
+	}
+
+	return nil
+}
+
+func validateCheckNumberParams(params CheckNumberParams) error {
+	if strings.TrimSpace(params.Number) == "" {
+		return &ValidationError{Message: "number is required"}
 	}
 
 	return nil
