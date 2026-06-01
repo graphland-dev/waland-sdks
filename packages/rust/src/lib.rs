@@ -47,6 +47,23 @@ pub struct SendMessageResult {
     pub created_at: String,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckNumberParams {
+    pub number: String,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckNumberResult {
+    pub number: Option<String>,
+    pub chat_id: Option<String>,
+    pub jid: Option<String>,
+    pub exists: Option<bool>,
+    pub is_whats_app: Option<bool>,
+    pub on_whats_app: Option<bool>,
+}
+
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum ApiMessage {
@@ -229,6 +246,77 @@ impl WalandClient {
 
         serde_json::from_value(payload).map_err(WalandError::Json)
     }
+
+    pub async fn check_number(
+        &self,
+        params: CheckNumberParams,
+    ) -> Result<CheckNumberResult, WalandError> {
+        validate_check_number_params(&params)?;
+
+        let body = CheckNumberParams {
+            number: params.number.trim().to_string(),
+        };
+
+        let url = format!(
+            "{}/v1/sessions/{}/check-number",
+            self.base_url,
+            urlencoding::encode(&self.session_id)
+        );
+
+        let response = self
+            .http
+            .post(url)
+            .bearer_auth(&self.api_key)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .json(&body)
+            .send()
+            .await
+            .map_err(|error| {
+                if error.is_timeout() {
+                    WalandError::Api(WalandApiError {
+                        status_code: 408,
+                        message: format!("Request timed out after {}ms", self.timeout.as_millis()),
+                        error: Some("Request Timeout".to_string()),
+                        body: WalandApiErrorBody {
+                            status_code: 408,
+                            message: ApiMessage::Single(format!(
+                                "Request timed out after {}ms",
+                                self.timeout.as_millis()
+                            )),
+                            error: Some("Request Timeout".to_string()),
+                        },
+                    })
+                } else {
+                    WalandError::Transport(error)
+                }
+            })?;
+
+        let status = response.status().as_u16();
+        let payload: serde_json::Value = match response.text().await {
+            Ok(text) if text.trim().is_empty() => serde_json::json!({}),
+            Ok(text) => serde_json::from_str(&text).unwrap_or_else(|_| {
+                serde_json::json!({
+                    "statusCode": status,
+                    "message": text,
+                    "error": "Error"
+                })
+            }),
+            Err(error) => return Err(WalandError::Transport(error)),
+        };
+
+        if !(200..300).contains(&status) {
+            let body = normalize_error_body(status, payload);
+            return Err(WalandError::Api(WalandApiError {
+                status_code: body.status_code,
+                message: body.message.to_string(),
+                error: body.error.clone(),
+                body,
+            }));
+        }
+
+        serde_json::from_value(payload).map_err(WalandError::Json)
+    }
 }
 
 fn trim_trailing_slash(value: &str) -> String {
@@ -306,6 +394,10 @@ fn validate_send_message_params(params: &SendMessageParams) -> Result<(), Waland
     }
 
     Ok(())
+}
+
+fn validate_check_number_params(params: &CheckNumberParams) -> Result<(), WalandValidationError> {
+    assert_non_empty(&params.number, "number")
 }
 
 fn is_valid_chat_id(chat_id: &str) -> bool {
@@ -522,5 +614,48 @@ mod tests {
             }
             _ => panic!("expected WalandError::Validation"),
         }
+    }
+
+    #[tokio::test]
+    async fn checks_number() {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/v1/sessions/session-abc123/check-number")
+                .header_exists("authorization")
+                .header("content-type", "application/json")
+                .json_body(serde_json::json!({
+                    "number": "8801712345678"
+                }));
+
+            then.status(200).json_body(serde_json::json!({
+                "number": "8801712345678",
+                "chatId": "8801712345678@s.whatsapp.net",
+                "jid": "8801712345678@s.whatsapp.net",
+                "exists": true
+            }));
+        });
+
+        let client = WalandClient::new(
+            API_KEY,
+            SESSION_ID,
+            Some(WalandClientOptions {
+                base_url: Some(server.base_url()),
+                timeout: None,
+                http_client: None,
+            }),
+        )
+        .unwrap();
+
+        let result = client
+            .check_number(CheckNumberParams {
+                number: "8801712345678".to_string(),
+            })
+            .await
+            .unwrap();
+
+        mock.assert();
+        assert_eq!(result.exists, Some(true));
     }
 }

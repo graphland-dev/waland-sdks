@@ -124,4 +124,36 @@ final class WalandClientTest extends TestCase
             $this->assertSame('Invalid or missing org API key', $e->getMessage());
         }
     }
+
+    public function testCheckNumber(): void
+    {
+        $success = json_encode([
+            'number' => '8801712345678',
+            'chatId' => '8801712345678@s.whatsapp.net',
+            'jid' => '8801712345678@s.whatsapp.net',
+            'exists' => true,
+        ], JSON_THROW_ON_ERROR);
+
+        $http = new FakeHttpClient([new HttpResponse(200, $success)]);
+        $client = new WalandClient(self::API_KEY, self::SESSION_ID, [
+            'httpClient' => $http,
+        ]);
+
+        $result = $client->checkNumber(['number' => '8801712345678']);
+
+        $this->assertTrue($result['exists']);
+        $this->assertSame(
+            'https://api.waland.dev/v1/sessions/session-abc123/check-number',
+            $http->requests[0]['url'],
+        );
+        $this->assertSame('{"number":"8801712345678"}', $http->requests[0]['body']);
+    }
+
+    public function testCheckNumberRequiresNumber(): void
+    {
+        $client = new WalandClient(self::API_KEY, self::SESSION_ID);
+
+        $this->expectException(WalandValidationException::class);
+        $client->checkNumber(['number' => '   ']);
+    }
 }

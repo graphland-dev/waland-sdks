@@ -159,3 +159,48 @@ func TestReturnsAPIError(t *testing.T) {
 		t.Fatalf("unexpected message: %s", apiErr.Message)
 	}
 }
+
+func TestCheckNumber(t *testing.T) {
+	t.Parallel()
+
+	var gotBody map[string]interface{}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/sessions/session-abc123/check-number" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+
+		body, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(body, &gotBody)
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"number":"8801712345678","chatId":"8801712345678@s.whatsapp.net","jid":"8801712345678@s.whatsapp.net","exists":true}`))
+	}))
+	defer server.Close()
+
+	client, _ := NewClient(testAPIKey, testSessionID, &ClientOptions{BaseURL: server.URL})
+	result, err := client.CheckNumber(context.Background(), CheckNumberParams{Number: "8801712345678"})
+	if err != nil {
+		t.Fatalf("CheckNumber failed: %v", err)
+	}
+
+	if gotBody["number"] != "8801712345678" {
+		t.Fatalf("unexpected request body: %#v", gotBody)
+	}
+	if result.Exists == nil || !*result.Exists {
+		t.Fatalf("expected exists=true, got %#v", result.Exists)
+	}
+}
+
+func TestCheckNumberRequiresNumber(t *testing.T) {
+	client, _ := NewClient(testAPIKey, testSessionID, nil)
+
+	_, err := client.CheckNumber(context.Background(), CheckNumberParams{Number: " "})
+	if err == nil {
+		t.Fatalf("expected validation error")
+	}
+	if _, ok := err.(*ValidationError); !ok {
+		t.Fatalf("expected ValidationError, got %T", err)
+	}
+}

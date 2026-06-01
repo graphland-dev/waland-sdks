@@ -1,5 +1,5 @@
 import { WalandValidationError } from "./errors.js";
-import type { SendMessageParams } from "./types.js";
+import type { CheckNumberParams, SendMessageParams } from "./types.js";
 
 const CHAT_ID_PATTERN = /^[^@\s]+@(s\.whatsapp\.net|g\.us)$/;
 
@@ -16,6 +16,10 @@ export function validateSendMessageParams(params: SendMessageParams): void {
     throw new WalandValidationError(
       "chatId must be a WhatsApp JID, e.g. 8801712345678@s.whatsapp.net or {groupId}@g.us",
     );
+  }
+
+  export function validateCheckNumberParams(params: CheckNumberParams): void {
+    assertNonEmpty(params.number, "number");
   }
 
   const text = params.text?.trim();

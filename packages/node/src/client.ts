@@ -1,6 +1,12 @@
 import { WalandError } from "./errors.js";
-import { validateSendMessageParams, assertNonEmpty } from "./validate.js";
 import {
+  validateSendMessageParams,
+  validateCheckNumberParams,
+  assertNonEmpty,
+} from "./validate.js";
+import {
+  type CheckNumberParams,
+  type CheckNumberResult,
   DEFAULT_BASE_URL,
   type SendMessageParams,
   type SendMessageResult,
@@ -82,6 +88,53 @@ export class WalandClient {
     }
 
     return payload as SendMessageResult;
+  }
+
+  async checkNumber(
+    params: CheckNumberParams | string,
+  ): Promise<CheckNumberResult> {
+    const normalized =
+      typeof params === "string" ? { number: params } : { ...params };
+    validateCheckNumberParams(normalized);
+
+    const url = `${this.baseUrl}/v1/sessions/${encodeURIComponent(this.sessionId)}/check-number`;
+    const body = { number: normalized.number.trim() };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + this.apiKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new WalandError({
+          statusCode: 408,
+          message: `Request timed out after ${this.timeoutMs}ms`,
+          error: "Request Timeout",
+        });
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const payload = await parseJsonBody(response);
+
+    if (!response.ok) {
+      throw new WalandError(normalizeErrorBody(response.status, payload));
+    }
+
+    return payload as CheckNumberResult;
   }
 }
 

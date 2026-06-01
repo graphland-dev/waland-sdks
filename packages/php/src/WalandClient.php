@@ -92,6 +92,44 @@ final class WalandClient
     }
 
     /**
+     * @param array{number: string}|string $params
+     *
+     * @return array<string, mixed>
+     */
+    public function checkNumber(array|string $params): array
+    {
+        if (is_string($params)) {
+            $params = ['number' => $params];
+        }
+
+        MessageValidator::validateCheckNumber($params);
+
+        $url = $this->baseUrl
+            . '/v1/sessions/'
+            . rawurlencode($this->sessionId)
+            . '/check-number';
+
+        $response = $this->http->post(
+            $url,
+            [
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+            json_encode(['number' => trim((string) $params['number'])], JSON_THROW_ON_ERROR),
+            $this->timeoutSeconds,
+        );
+
+        $payload = self::parseJsonBody($response->body, $response->statusCode);
+
+        if ($response->statusCode < 200 || $response->statusCode >= 300) {
+            throw new WalandException(self::normalizeErrorBody($response->statusCode, $payload));
+        }
+
+        return $payload;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private static function parseJsonBody(string $body, int $statusCode): array
